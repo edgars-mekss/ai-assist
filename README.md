@@ -1,4 +1,4 @@
-# Pomoshnik — an offline voice AI assistant for Windows
+# AI Assist — an offline voice AI assistant for Windows
 
 🇷🇺 [Описание на русском](README.ru.md)
 
