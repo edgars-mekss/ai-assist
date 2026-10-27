@@ -1,117 +1,75 @@
-# Помощник — свой локальный помощник на ПК
+# Pomoshnik — an offline voice AI assistant for Windows
 
-Запуск: двойной щелчок по **«Запустить помощника.cmd»**. Откроется окно чата. Закроешь окно — модель выключится. Окно можно сворачивать: пока оно открыто, приходят напоминания.
+🇷🇺 [Описание на русском](README.ru.md)
 
-Первый запуск сам скачивает всё нужное, около 17 ГБ:
-- Ollama — программа, которая запускает модель;
-- модели Qwen 3.5 9B и GigaChat 3.1 Lightning;
-- голоса: Silero v5 и Piper с русскими голосами;
-- распознавание речи GigaAM v3.
+> **Status: early work in progress.** Built in about two months with Claude Code and Cursor.
 
-Потом всё работает без интернета. Всё лежит в этой папке, в системе ничего не ставится.
+A personal AI assistant that runs **entirely on your own PC, with no internet connection after setup**. You talk to it by voice or text. It sets reminders, tracks habits, remembers what matters about you, and can carry out tasks on your computer. Every risky action needs your explicit approval.
 
-## Что умеет
+The interface is in Russian. The models, speech recognition and voices are tuned for Russian.
 
-- **Чат.** Ответ печатается сразу, по мере того как модель его пишет. «Стоп» обрывает ответ.
-- **Голос.**
-  - Включи «Голос» вверху — помощник читает ответ вслух, по предложениям, ещё пока пишет.
-  - Кнопка 🔊 у сообщения прочитает его ещё раз.
-- **Ввод голосом.**
-  - 🎤 слева от строки ввода или **Ctrl+Пробел** — говори.
-  - Замолчал на 1,3 секунды — фраза распознаётся (GigaAM, около 0,1 секунды) и уходит в чат.
-  - Ещё раз 🎤 — отправить сразу.
-  - При первом разе окно спросит разрешение на микрофон.
-- **Напоминания (⏰).**
-  - В чате: «напомни завтра в 9 позвонить маме», «через 20 минут выключить духовку».
-  - Вопросы «какие у меня напоминания?» и «отмени про маму» тоже понимает.
-  - Срок пришёл — уведомление Windows и сообщение в чате; с включённым «Голосом» напоминание читается вслух.
-  - В окне ⏰ — список, отмена, новое напоминание вручную.
-- **Привычки (📅).**
-  - В чате: «сегодня пробежал 5 км» — помощник отметит «Бег»; новой привычки ещё нет — заведёт сам.
-  - В окне 📅 — 14 последних дней. Щелчок по дню отмечает или снимает отметку. Видна серия дней подряд 🔥.
-  - Вечером (по умолчанию в 21:00) помощник спросит, что ещё не отмечено. Время меняется в окне; пустое поле — не спрашивать.
-- **Поиск по прошлому.**
-  - «О чём мы говорили про сервер?» — помощник ищет по всему архиву разговоров, даже стёртых через «＋».
-- **Память «Что я о тебе знаю» (🧠).**
-  - Помощник сам выписывает из разговоров важное о тебе: имя, город, работу, близких, цели и планы, договорённости, как тебе удобнее отвечать.
-  - Записанное уточняет, если что-то изменилось («жил в Казани» → «живёт в Питере»).
-  - Разбирает в паузе — через 20 секунд тишины после ответа, около 2 секунд.
-  - В чате коротко видно, что запомнил или забыл.
-  - Факты подставляются в каждый разговор, в том числе после «＋».
-  - «Запомни, что…» — записывает сразу.
-  - В окне 🧠 их можно поправить, удалить, дописать вручную или «Забыть всё».
-- **Дата и время.** Помощник знает сегодняшнюю дату, день недели и время.
-- **Поручения на ПК (🔐 «Доступ»).** Помощник может:
-  - рассказать о компьютере: место на дисках, память, загрузка, тяжёлые программы;
-  - смотреть папки, искать и читать файлы (текст, Word) — только в разрешённых папках;
-  - посмотреть на экран — снимок виден в чате, никуда не сохраняется;
-  - открыть сайт, файл, папку или установленную программу;
-  - создать новый файл (по умолчанию — «Документы\Помощник»);
-  - положить текст в буфер обмена;
-  - отправить письмо с твоей почты.
-- **Безопасность поручений.**
-  - **Удалять, перемещать и переписывать файлы, запускать команды и программы из файлов, менять настройки Windows — инструментов нет вовсе.** Существующий файл не затирается: новый получает имя «(2)».
-  - Письмо, открытие, новый файл, снимок экрана — только после «Разрешить» на карточке в чате. Карточка показывает действие целиком: письмо — кому, тема, весь текст, вложения. Номер карточки знает только окно, модель подтвердить сама не может. Нет ответа 5 минут или нажат «Стоп» — значит «нет».
-  - Для каждого умения — «разрешено / спрашивать / запрещено»; у письма, открытия, файлов и снимка экрана «разрешено всегда» нет. Общий выключатель — вверху окна 🔐.
-  - Файлы — только в разрешённых папках (по умолчанию Рабочий стол, Документы, Загрузки; добавить — полный путь в окне 🔐). Пароли, ключи, токены, `.env`, `.ssh`, `AppData`, `Windows`, `Program Files` закрыты всегда.
-  - Текст из файлов, писем и с экрана модель получает как данные; указания внутри не выполняет (проверено файлом с «отправь письмо на evil@…»).
-  - Пароль почты — пароль приложения, зашифрован DPAPI Windows в `data/mail.json` (расшифровать может только твоя учётная запись на этом ПК), назад в окно не отдаётся.
-  - Сервер принимает запросы только от своего окна: чужой `Host` или `Origin` и не-JSON — отказ (защита от сайтов в браузере).
-  - Журнал всех действий — в окне 🔐 и в `data/actions.jsonl`.
-- **Модели.** Переключатель — в шапке окна, рядом с «Помощник».
-  - **Qwen 3.5 9B** (по умолчанию, видеокарта, «рассуждать» включено): умнее, надёжнее с напоминаниями и привычками; ответ 3–8 с; с запущенной игрой делит с ней видеокарту.
-  - **GigaChat 3.1** (процессор): живее русский, видеокарту не трогает; ответ 2–7 с. В длинном разговоре иногда пишет «записал», а привычку не отмечает.
-  - ⚙ → «Модели» — список. Галочка «рассуждать» есть у моделей, которые это умеют: с ней умнее, но ответ на несколько секунд позже.
-  - Там же можно **добавить любую открытую модель**: имя из ollama.com/library («gemma3:12b») или GGUF с Hugging Face («hf.co/автор/репозиторий:Q4_K_M»), «на видеокарте» или нет — помощник скачает её сам и покажет ход. Своя модель убирается × (файлы с диска — по желанию).
-  - Модель без инструментов (tools) просто разговаривает: без напоминаний и привычек из чата.
-- **Настройки** (⚙):
-  - голос: **Silero v5** — Ксения (по умолчанию), Байя, Ксения 2, Айдар, Евгений; или Piper — Ирина, Дмитрий, Денис, Руслан;
-  - скорость речи;
-  - характер помощника — правила, которые он получает перед разговором.
-- **«＋»** — новый разговор: старый уходит из окна, но остаётся в архиве для поиска.
+## Features
 
-Первый ответ после запуска или смены модели — дольше, до 10–30 с: модель загружается.
+- **Streaming chat** with local LLMs (Qwen 3.5 9B on GPU, GigaChat 3.1 on CPU). You can switch models in the header and install any open model from Ollama or Hugging Face from the UI.
+- **Voice in.** Push-to-talk (Ctrl+Space). The phrase is sent after 1.3 s of silence and recognized locally by GigaAM in about 0.1 s.
+- **Voice out.** The reply is spoken sentence by sentence while it is still being generated (Silero or Piper voices).
+- **Reminders.** Set them in plain language ("remind me tomorrow at 9 to call mom") and get Windows notifications.
+- **Habit tracker.** "Ran 5 km today" checks off the habit and keeps your streak. In the evening the assistant asks about habits you haven't checked yet.
+- **Long-term memory.** The assistant extracts facts about you in the background, updates them when they change, and lets you edit or wipe them.
+- **Search over past conversations.** BM25 over the full archive, including cleared chats.
+- **Tasks on your PC.** System info, file search and reading in allowed folders, opening apps and sites, screenshots, creating files, sending email.
 
-Замер 26.10 — 8 фраз «сделал полезное» и 4 обычные, отмечена ли привычка:
+## Safety by design
 
-| Модель | Отметила | Лишних | Время |
+The assistant can act on your computer, so safety was designed in from the start:
+
+- **No destructive tools at all.** It cannot delete, move or overwrite files, run commands or change system settings. A new file never replaces an existing one.
+- **Human-in-the-loop confirmation.** Email, opening things, creating files and screenshots require a click on "Allow". The confirmation card shows the full action. The card id is known only to the UI, so the model cannot approve its own request. No answer within 5 minutes means "no".
+- **Per-tool permissions:** allowed / ask / denied, plus a master switch.
+- **Prompt-injection resistance.** Text from files, emails and the screen is passed to the model as data, not instructions. This was tested with a planted file that said "send an email to evil@…".
+- **Folder sandbox.** The assistant only touches allowed folders. Secrets (`.env`, `.ssh`, keys, tokens), `AppData`, `Windows` and `Program Files` are always blocked.
+- **Hardened local server.** It rejects foreign `Host` and `Origin` headers and non-JSON requests, which protects it from malicious websites in the browser.
+- **Encrypted credentials.** The mail password is encrypted with Windows DPAPI and is never sent back to the UI.
+- **Audit log** of every action.
+
+## Measured, not guessed
+
+Tool-calling accuracy on 8 "I did something useful" phrases plus 4 neutral ones (26 Oct):
+
+| Model | Habit checked | False positives | Latency |
 |---|---|---|---|
-| Qwen 9B без рассуждений | 1 из 8 | 0 | 1,5 с |
-| Qwen 9B с рассуждениями | 6 из 8 | 0 | 4,7 с |
-| GigaChat | 8 из 8 | 0 | 2,1 с |
+| Qwen 9B, no reasoning | 1 / 8 | 0 | 1.5 s |
+| Qwen 9B, reasoning | 6 / 8 | 0 | 4.7 s |
+| GigaChat 3.1 | 8 / 8 | 0 | 2.1 s |
 
-В длинном разговоре Qwen с рассуждениями отметила всё; GigaChat один раз написала «записал» без отметки.
+Other decisions based on testing:
+- **Prompt ordering is tuned to Ollama's prompt cache.** The stable part (persona, memory, tool rules) comes first. Volatile context (time, reminders) goes last for CPU models, because a re-read costs about 10 s, and first for GPU models, because Qwen stops calling tools when that line sits mid-conversation.
+- **History is capped** at 10k characters / 40 messages. Longer contexts made the model reason itself into silence. Older messages stay searchable in the archive.
+- **Empty-answer fallback.** If the reasoning model writes its answer inside its reasoning and returns nothing, the step is retried without reasoning.
 
-## Устройство
+## Architecture
 
-| | |
+| Component | Role |
 |---|---|
-| `Запустить помощника.cmd` → `start.ps1` | скачать недостающее, запустить Ollama, сервер окна и окно Edge (`--app`, свой профиль в `runtime/edge-profile`); после закрытия окна — остановить их. `start.ps1 -SetupOnly` — только скачать |
-| `app/server.py` | сервер окна на `127.0.0.1:8765`, запускается Python'ом из `runtime/pyenv`. API: `/api/chat`, `/api/tts`, `/api/stt`, `/api/state`, `/api/settings`, `/api/history`, `/api/memory`, `/api/reminders`, `/api/habits`, `/api/events`. Подробнее — ниже. При старте и смене модели загружает её заранее |
-| `app/agent.py` | поручения на ПК: инструменты, разрешения (`data/access.json`), почта (SMTP, `data/mail.json`), журнал (`data/actions.jsonl`). Подтверждение — строка `{"confirm"}` в потоке ответа и ожидание `/api/confirm`. Если Qwen с рассуждениями отвечает пустотой (пишет ответ внутри рассуждений), шаг повторяется без них |
-| `app/tools.py` | инструменты: напоминания и привычки (планировщик раз в 15 с, уведомления Windows через WinRT из PowerShell), архив и поиск (BM25 по основам слов), распознавание речи |
-| `app/web/` | окно чата: `index.html`, `style.css`, `app.js` — простая разметка ответов, очередь озвучки, запись с микрофона в WAV 16 кГц, панели ⏰ 📅 🧠 ⚙. Адрес `…/#habits` (`#reminders`, `#memory`, `#settings`) сразу открывает панель |
-| `runtime/ollama/` | Ollama 0.40.11, переносная сборка; слушает `127.0.0.1:11435` (её же использует Ева в GTA) |
-| `runtime/pyenv/` | Python с PyTorch для процессора (Silero), `onnx-asr` (GigaAM) |
-| `runtime/hf/` | модель распознавания `gigaam-v3-e2e-ctc` int8 (istupakov/gigaam-v3-onnx), `HF_HOME` |
-| `app/silero_worker.py` | голос Silero: отдельный процесс в `runtime/pyenv`, сервер держит его запущенным и шлёт по строке JSON. Цифры переводит в слова. Скорость — SSML `prosody`; значение `medium` модель не принимает, поэтому обычная скорость идёт простым текстом |
-| `runtime/silero/v5_6_ru.pt` | Silero TTS `v5_6_ru` (snakers4/silero-models): ударения, омографы, вопросы. **Лицензия — только некоммерческая**: для продажи — договор с Silero или другой голос |
-| `runtime/piper/`, `runtime/voices/` | Piper 2023.11.14-2 и голоса `ru_RU-*-medium` (rhasspy/piper-voices); для продажи годятся только Дмитрий и Денис (CC0) |
-| `models/` | модели Ollama (`OLLAMA_MODELS`) |
-| `data/` | `history.json` — разговор в окне; `settings.json` — настройки; `memory.json` — память о тебе; `reminders.json`, `habits.json`; `archive.jsonl` — весь архив разговоров для поиска |
+| `start.ps1` | One-click setup and launch. Downloads what's missing (~17 GB) into the project folder and installs nothing system-wide. Starts Ollama, the local server and an Edge app window, and shuts everything down when the window closes. |
+| `app/server.py` | Local HTTP server (`127.0.0.1:8765`): chat streaming, TTS, STT, settings, history, memory, reminders, habits, model management |
+| `app/agent.py` | PC tools, permissions, confirmation flow, SMTP mail, audit log |
+| `app/tools.py` | Reminders and habits scheduler, Windows notifications via WinRT, archive search (BM25 with stemming), speech recognition |
+| `app/silero_worker.py` | Silero TTS in a separate process |
+| `app/web/` | Chat UI in plain HTML, CSS and JS: streaming markdown, TTS queue, 16 kHz WAV mic capture, side panels |
 
-Подробнее о сервере:
+**Stack:** Python, JavaScript, HTML/CSS, PowerShell · Ollama · Qwen 3.5, GigaChat 3.1 · GigaAM v3 (ONNX) · Silero v5, Piper
 
-- **`/api/chat`** — разговор с Ollama потоком, до 4 кругов вызова инструментов, `num_ctx` 8192.
-  - В модель уходит только конец разговора: до 10 тысяч символов и не больше 40 сообщений (`HISTORY_CHARS`). Длиннее — не влезает: 26.10 Qwen на таком разговоре начинала рассуждать и замолкала. Старое остаётся в архиве для поиска.
-  - Модель ничего не ответила — окно показывает ошибку, а не вечное «думает…».
-  - В начале — характер, память о тебе и правила инструментов. Эта часть не меняется, Ollama держит её в кэше.
-  - Время, напоминания и привычки меняются каждую минуту:
-    - у моделей на процессоре — перед последней репликой; иначе модель на процессоре перечитывает всё заново, около 10 с;
-    - у моделей на видеокарте — в начале: перечитать — полсекунды, а Qwen со строкой посреди разговора перестаёт вызывать инструменты.
-  - Пока модель рассуждает, окно показывает «думает…».
-- **Модели** — `BUILTIN_MODELS` в `app/server.py` (встроенные), свои — `data/models.json`, «рассуждать» — `settings.json` → `think`. `/api/models`: список (скачана ли, умеет ли tools / thinking — по `/api/show` Ollama), добавить, убрать, скачать (`/api/pull` в фоне, ход — в ответе).
-- **`/api/tts`** — WAV голосом.
-- **`/api/stt`** — текст из WAV, GigaAM.
+## Run
 
-Ещё скачаны `qwen3.5:4b` и `qwen3:4b-instruct-2507-q4_K_M` — их можно добавить в окне под этими именами, скачиваться заново не будут.
+Windows 10/11. Double-click `Запустить помощника.cmd`. The first launch downloads about 17 GB; after that everything works offline.
+
+## Licensing notes
+
+The Silero voice model is licensed for **non-commercial use only**. Of the Piper voices, only Dmitri and Denis (CC0) are suitable for commercial use. Models and voices are downloaded at first run and are not included in this repository.
+
+## Roadmap
+
+- [ ] Phone companion
+- [ ] Demo video and screenshots
+- [ ] English UI
