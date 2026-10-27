@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Помощник</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="title">
+    <span class="dot" id="dot"></span>
+    <b>Помощник</b>
+    <select id="modelSwitch" class="modelSwitch" title="Модель — переключить"></select>
+  </div>
+  <div class="actions">
+    <label class="switch" title="Отвечать голосом">
+      <input type="checkbox" id="speak">
+      <span class="track"><span class="knob"></span></span>
+      <span>Голос</span>
+    </label>
+    <button class="icon" id="newChat" title="Новый разговор">＋</button>
+    <button class="icon" id="openReminders" title="Напоминания">⏰</button>
+    <button class="icon" id="openHabits" title="Привычки">📅</button>
+    <button class="icon" id="openMemory" title="Что я о тебе знаю">🧠</button>
+    <button class="icon" id="openAccess" title="Доступ к ПК и почте">🔐</button>
+    <button class="icon" id="openSettings" title="Настройки">⚙</button>
+  </div>
+</header>
+
+<main id="list">
+  <div class="empty" id="empty">
+    <div class="big">Привет!</div>
+    <div>Напиши или скажи что-нибудь (🎤 или Ctrl+Пробел) — поговорим. Включи «Голос», и я буду отвечать вслух.</div>
+    <div class="tips">«Напомни через 20 минут выключить духовку» · «Сегодня пробежал 5 км» · «О чём мы говорили про сервер?»</div>
+  </div>
+</main>
+
+<form id="form">
+  <button type="button" id="mic" title="Сказать голосом (Ctrl+Пробел)">🎤</button>
+  <textarea id="input" rows="1" placeholder="Сообщение… (Enter — отправить, Shift+Enter — новая строка)"></textarea>
+  <button type="submit" id="send">Отправить</button>
+</form>
+
+<aside id="settings" hidden>
+  <div class="panel">
+    <h2>Настройки</h2>
+    <div class="block">
+      <div class="blockHead">Модели</div>
+      <ul id="modelList" class="items"></ul>
+      <form id="modelForm" class="addForm">
+        <input id="modelName" type="text" maxlength="200" placeholder="qwen3:14b или hf.co/автор/модель-GGUF:Q4_K_M">
+        <input id="modelLabel" type="text" maxlength="40" placeholder="Название в окне (необязательно)">
+        <label class="check"><input id="modelGpu" type="checkbox" checked> на видеокарте</label>
+        <button type="submit">Добавить и скачать</button>
+      </form>
+      <p class="hint">Открытые модели — на ollama.com/library (имя вида «gemma3:12b») или GGUF с Hugging Face
+        («hf.co/автор/репозиторий:Q4_K_M»). Видеокарте 8 ГБ по силам модели примерно до 9–12B; больше или
+        «не на видеокарте» — на процессоре, медленнее, зато не мешает играм. Напоминания и привычки работают только
+        с моделями, которые умеют инструменты (tools).</p>
+    </div>
+    <label>Голос
+      <select id="voice"></select>
+    </label>
+    <label>Скорость речи <span id="speedValue"></span>
+      <input type="range" id="speed" min="0.6" max="1.6" step="0.1">
+    </label>
+    <button type="button" id="testVoice">Проверить голос</button>
+    <label>Кто такой помощник (характер, правила)
+      <textarea id="system" rows="6"></textarea>
+    </label>
+    <div class="row">
+      <button type="button" id="clearChat" class="danger">Стереть весь разговор</button>
+      <button type="button" id="closeSettings">Готово</button>
+    </div>
+  </div>
+</aside>
+
+<aside id="memory" hidden>
+  <div class="panel">
+    <h2>Что я о тебе знаю</h2>
+    <p class="hint">Я выписываю сюда важное из наших разговоров и помню это всегда, даже после «нового разговора».
+      Поправь, удали лишнее или допиши сам.</p>
+    <ul id="facts" class="facts"></ul>
+    <p id="factsEmpty" class="hint">Пока пусто — расскажи о себе, и я запомню.</p>
+    <form id="factForm" class="factAdd">
+      <input id="factInput" type="text" maxlength="200" placeholder="Например: люблю короткие ответы">
+      <button type="submit">Добавить</button>
+    </form>
+    <div class="row">
+      <button type="button" id="forgetAll" class="danger">Забыть всё</button>
+      <button type="button" id="closeMemory">Готово</button>
+    </div>
+  </div>
+</aside>
+
+<aside id="reminders" hidden>
+  <div class="panel">
+    <h2>Напоминания</h2>
+    <p class="hint">Можно просто сказать в чате: «напомни завтра в 9 позвонить маме». Придёт уведомление Windows,
+      пока помощник открыт (окно можно свернуть).</p>
+    <ul id="remList" class="items"></ul>
+    <p id="remEmpty" class="hint">Напоминаний нет.</p>
+    <form id="remForm" class="addForm">
+      <input id="remText" type="text" maxlength="200" placeholder="О чём напомнить">
+      <input id="remWhen" type="datetime-local">
+      <button type="submit">Добавить</button>
+    </form>
+    <div class="row">
+      <span></span>
+      <button type="button" id="closeReminders">Готово</button>
+    </div>
+  </div>
+</aside>
+
+<aside id="habits" hidden>
+  <div class="panel wide">
+    <h2>Привычки</h2>
+    <p class="hint">Отмечай в чате («сегодня сделал зарядку») или щёлкай по дням. Серия — сколько дней подряд.</p>
+    <div id="habitGrid" class="habitGrid"></div>
+    <p id="habitsEmpty" class="hint">Пока ни одной — добавь ниже или просто скажи в чате, что сделал.</p>
+    <form id="habitForm" class="addForm">
+      <input id="habitName" type="text" maxlength="60" placeholder="Например: Зарядка">
+      <button type="submit">Добавить</button>
+    </form>
+    <label class="inline">Вечером спросить, что не отмечено, в
+      <input id="checkTime" type="time"> <span class="hint">(пусто — не спрашивать)</span>
+    </label>
+    <div class="row">
+      <span></span>
+      <button type="button" id="closeHabits">Готово</button>
+    </div>
+  </div>
+</aside>
+
+<aside id="access" hidden>
+  <div class="panel wide">
+    <h2>Доступ к ПК</h2>
+    <label class="switch big">
+      <input type="checkbox" id="accessOn">
+      <span class="track"><span class="knob"></span></span>
+      <span>Помощник может действовать на компьютере</span>
+    </label>
+    <p class="hint">Удалять, перемещать и переписывать файлы, запускать команды и менять настройки Windows помощник
+      не может вовсе. Письма, открытие программ и сайтов, новые файлы и снимок экрана — только после твоего
+      «Разрешить» в чате. Пароли, ключи, секреты и системные папки закрыты всегда.</p>
+
+    <div id="accessBody">
+      <div class="block">
+        <div class="blockHead">Что можно</div>
+        <ul id="toolList" class="items tools"></ul>
+      </div>
+
+      <div class="block">
+        <div class="blockHead">Папки, которые можно смотреть и читать</div>
+        <ul id="folderList" class="items"></ul>
+        <p id="foldersEmpty" class="hint">Ни одной — файлы помощнику недоступны.</p>
+        <form id="folderForm" class="addForm">
+          <input id="folderPath" type="text" maxlength="300" placeholder="Полный путь, например D:\Работа">
+          <button type="submit">Открыть доступ</button>
+        </form>
+      </div>
+
+      <div class="block">
+        <div class="blockHead">Почта — <span id="mailState"></span></div>
+        <form id="mailForm" class="addForm">
+          <input id="mailAddr" type="email" maxlength="120" placeholder="адрес, например name@gmail.com" autocomplete="off">
+          <input id="mailPass" type="password" maxlength="200" autocomplete="new-password">
+          <input id="mailServer" type="text" maxlength="120" placeholder="SMTP-сервер (сам для Gmail, Яндекса, Mail.ru)">
+          <input id="mailPort" type="text" maxlength="5" placeholder="порт" class="port">
+          <button type="submit">Сохранить</button>
+          <button type="button" id="mailTest">Проверить</button>
+          <button type="button" id="mailForget" class="danger">Забыть</button>
+        </form>
+        <p class="hint">Нужен <b>пароль приложения</b>, а не обычный пароль от почты: Gmail — myaccount.google.com →
+          Безопасность → Пароли приложений (нужна двухэтапная проверка); Яндекс — id.yandex.ru → Безопасность → Пароли
+          приложений → Почта; Mail.ru — Настройки → Безопасность → Пароли для внешних приложений. Пароль хранится
+          зашифрованным (Windows DPAPI) и назад в окно не показывается.</p>
+      </div>
+
+      <div class="block">
+        <div class="blockHead">Журнал действий</div>
+        <ul id="actionLog" class="log"></ul>
+        <p id="logEmpty" class="hint">Пока ничего не делал.</p>
+      </div>
+    </div>
+    <div class="row">
+      <span></span>
+      <button type="button" id="closeAccess">Готово</button>
+    </div>
+  </div>
+</aside>
+
+<script src="app.js"></script>
+</body>
+</html>
